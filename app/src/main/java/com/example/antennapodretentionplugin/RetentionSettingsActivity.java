@@ -47,8 +47,9 @@ public class RetentionSettingsActivity extends Activity {
     private void render() {
         container.removeAllViews();
         container.addView(headline("Keep the newest episodes"));
-        container.addView(caption("AntennaPod deletes the older downloaded episodes of a podcast during "
-                + "its automatic cleanup. Queued and favorite episodes are never deleted."));
+        container.addView(caption("Older episodes are cut out of the feed before AntennaPod reads it, so "
+                + "only the newest ones ever appear. Episodes already downloaded are removed during the "
+                + "next automatic cleanup; queued and favorite episodes are never deleted."));
         container.addView(row("All podcasts", describe(preferences.getDefaultKeepCount()),
                 view -> askForCount("All podcasts", preferences.getDefaultKeepCount(), false, count -> {
                     preferences.setDefaultKeepCount(count);

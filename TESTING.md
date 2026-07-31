@@ -1,7 +1,7 @@
 # End-to-end test: AntennaPod retention plugin
 
 This walks through installing AntennaPod (debug) and this plugin, enabling it, and verifying
-that only the newest N downloaded episodes of a podcast survive the automatic cleanup.
+that only the newest N episodes of a podcast ever reach the app.
 
 Requires a machine with the Android SDK and a device/emulator (`adb`). AntennaPod's debug build has
 applicationId `de.danoeh.antennapod.debug`.
@@ -42,21 +42,35 @@ restarting the app.)
 
 Open the "AntennaPod Retention Plugin" app. Set **All podcasts** to e.g. `2`. Podcasts show up under
 **Per podcast** once AntennaPod has asked about them, so you can override individual ones after the
-first cleanup run.
+first feed refresh or cleanup run.
 
-## 5. Trigger a cleanup
+## 5. Verify the feed is truncated
 
-1. Subscribe to a podcast and download 4 or more of its episodes.
-2. Make sure the episodes are neither in the queue nor marked as favorite — those are never deleted.
-3. Trigger AntennaPod's automatic cleanup (it runs with the automatic download job; on a test device
-   the quickest way is Settings → Automatic Download, enable it, and let the job run, or simply
-   refresh and wait for the periodic job).
+1. Subscribe to a podcast with many episodes (or refresh one you already have).
+2. Open the podcast: only the newest 2 episodes are listed. The rest are not "hidden" — AntennaPod
+   never parsed them, so they are absent from the database entirely.
+3. Set the value back to `0` (keep all) and refresh again: the full episode list returns.
 
-## 6. Verify
+Confirm via logcat:
 
-- The two newest episodes are still downloaded, the older ones are not.
+```
+adb logcat -d | grep -E "RetentionFeedPlugin|RemoteFeedContent|FeedContentRegistry"
+```
 
-Confirm the plugin ran via logcat:
+Expected lines include `Registering feed content plugin 'keep-newest-episodes'`, `<url> has N items,
+keeping newest 2`, and `Applied feed rewritten by 'keep-newest-episodes': X item(s) removed`.
+
+## 6. Verify cleanup of already-downloaded episodes
+
+The feed hook only affects what is fetched from now on; episodes downloaded earlier are cleaned up by
+the retention half of the plugin.
+
+1. With the value set high (or `0`), download 4 or more episodes of a podcast.
+2. Make sure they are neither in the queue nor marked as favorite — those are never deleted.
+3. Lower the value to 2, then trigger AntennaPod's automatic cleanup (it runs with the automatic
+   download job; on a test device the quickest way is Settings → Automatic Download, enable it, and let
+   the job run).
+4. The two newest episodes are still downloaded, the older ones are not.
 
 ```
 adb logcat -d | grep -E "RetentionPlugin|RemoteRetentionPolicy|PluginRetentionCleanup|PluginManager"
