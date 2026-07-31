@@ -31,5 +31,20 @@
                 android:name="de.danoeh.antennapod.plugin.CAPABILITIES"
                 android:value="4"/>
         </service>
+
+        <service
+            android:name=".FeedContentPluginService"
+            android:exported="true"
+            android:permission="de.danoeh.antennapod.permission.PLUGIN">
+            <intent-filter>
+                <action android:name="de.danoeh.antennapod.plugin.action.FEED_CONTENT"/>
+            </intent-filter>
+            <meta-data
+                android:name="de.danoeh.antennapod.plugin.ID"
+                android:value="keep-newest-episodes"/>
+            <meta-data
+                android:name="de.danoeh.antennapod.plugin.CAPABILITIES"
+                android:value="8"/>
+        </service>
     </application>
 </manifest>
